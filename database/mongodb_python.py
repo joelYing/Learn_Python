@@ -13,54 +13,112 @@ class PymongoPython(object):
     保存
     """
     def save(self):
-        #
         collection = self.db['first']
         # to_save must be an instance of dict, bson.son.SON, bson.raw_bson.RawBSONDocument,
         # or a type that inherits from collections.MutableMapping
+        # save: 若新增数据的主键已经存在，则会对当前已经存在的数据进行修改操作。不存在该主键，则插入
         collection.save({'func': 'save'})
 
     """
-    查询
+    插入
     """
-    def select(self):
+    def insert(self):
+        # 若插入的主键已存在则报错：
+        # pymongo.errors.DuplicateKeyError:
+        # E11000 duplicate key error collection: test.first index: _id_ dup key: { : 1 }
         datas = [
             {'_id': 1, 'data': 12},
             {'_id': 2, 'data': 22},
             {'_id': 3, 'data': 'cc'}
         ]
-        # collection = self.db.first 若没有该集合，则会自动新建一个
+        datas2 = [
+            {'_id': 4, 'data': 'a'},
+            {'_id': 5, 'data': 'b'},
+            {'_id': 6, 'data': 'c'}
+        ]
         collection = self.db['first']
-        collection.insert(datas)
+        # 不建议直接使用 insert()
+        # collection.insert(datas2)
+
+        # 插入一条
+        result_one = collection.insert_one({'_id': 8, 'name': 'joe'})
+        print(result_one.inserted_id)
+
+        # 插入多条，数据以列表形式传递
+        result_many = collection.insert_many(datas)
+        print(result_many.inserted_ids)
+
         # 查询集合中全部数据
         res = collection.find()
         for r in res:
             print(r)
 
     """
-    流式游标查询
+    更新 one 查询条件为 name=joe 的数据，将其更新为 joel
     """
-    def select_ssdictcursor(self):
-        pass
+    def updateone(self):
+        collection = self.db.first
+        condition = {'name': 'joe'}
+        student = collection.find_one(condition)
+        student['name'] = 'joel'
+        result = collection.update_one(condition, {'$set': student})
+        print(result)
+        # 匹配的数据条数，影响的数据条数
+        print(result.matched_count, result.modified_count)
 
     """
-    插入
+    更新 many 查询 _id 小于10 的数据，并将每一条符合条件的数据添加 age=1
     """
-    def insert(self):
-        pass
+    def updatemany(self):
+        collection = self.db.first
+        condition = {'_id': {'$lt': 10}}
+        result = collection.update_many(condition, {'$inc': {'age': 1}})
+        print(result)
+        print(result.matched_count, result.modified_count)
 
     """
-    更新 预编译防SQL注入
+    更新插入 查询 _id 小于10 的数据，并将每一条符合条件的数据的 age + 2
     """
-    def update(self):
-        pass
+    def up_sert(self):
+        collection = self.db.first
+        condition = {'_id': {'$lt': 10}}
+        result = collection.update_many(condition, {'$inc': {'age': 2}}, upsert=True)
+        print(result)
+        print(result.matched_count, result.modified_count)
 
     """
-    删除
+    删除 名字为joel的数据
     """
     def delete(self):
-        pass
+        collection = self.db.first
+        result = collection.remove({'name': 'joel'})
+        print(result)
+
+    """
+    删除 删除名字为joel的，批量删除age小于4的
+    """
+    def delete_one_many(self):
+        collection = self.db.first
+        result = collection.delete_one({'name': 'joel'})
+        print(result)
+        print(result.deleted_count)
+        result = collection.delete_many({'age': {'$lt': 4}})
+        print(result.deleted_count)
+
+    """
+    查询 
+    """
+    def finds(self):
+        collection = self.db.first
+        # 查询全部内容
+        result = collection.find()
+        for r in result:
+            print(r)
+        # 查询符合条件的一个内容
+        result_one = collection.find_one({'func': 'save'})
+        print(result_one)
 
 
 if __name__ == '__main__':
     pymongopython = PymongoPython()
-    pymongopython.save()
+    pymongopython.finds()

@@ -1,0 +1,17 @@
+import redis
+
+
+class RedisHelper(object):
+    def __init__(self):
+        self.__conn = redis.Redis(host='localhost', port=6379, password=12138000, db=1)
+        self.channel = 'monitor'
+
+    def publish(self, msg):
+        self.__conn.publish(self.channel, msg)
+        return True
+
+    def subscribe(self):
+        pub = self.__conn.pubsub()
+        pub.subscribe(self.channel)
+        pub.parse_response()
+        return pub
