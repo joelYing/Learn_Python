@@ -9,7 +9,7 @@
 因为 SSCursor 是没有缓存的游标,结果集只要没取完，这个 conn 是不能再处理别的 sql，包括另外生成一个 cursor 也不行的。如果需要干别的，请另外再生成一个连接对象。
 每次读取后处理数据要快，不能超过 60 s，否则 mysql 将会断开这次连接，也可以修改 SET NET_WRITE_TIMEOUT = xx 来增加超时间隔。
 
-### 
+### execute 防SQL注入
 execute() 函数本身有接受sql语句参数位的，可以通过python自身的函数处理sql注入问题。
 ```
 args = (id, type)

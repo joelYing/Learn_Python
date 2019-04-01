@@ -10,6 +10,16 @@ class PymongoPython(object):
         self.select_list = []
 
     """
+    保存
+    """
+    def save(self):
+        #
+        collection = self.db['first']
+        # to_save must be an instance of dict, bson.son.SON, bson.raw_bson.RawBSONDocument,
+        # or a type that inherits from collections.MutableMapping
+        collection.save({'func': 'save'})
+
+    """
     查询
     """
     def select(self):
@@ -53,4 +63,4 @@ class PymongoPython(object):
 
 if __name__ == '__main__':
     pymongopython = PymongoPython()
-    pymongopython.select()
+    pymongopython.save()
